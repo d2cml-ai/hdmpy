@@ -1,2 +1,4 @@
 # hdmpy
-A python port of the hdm package for R
+A Python port of the hdm package for R
+
+![](img/functions_hdm.png)
