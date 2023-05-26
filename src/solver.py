@@ -92,7 +92,7 @@ def init_values(X, y, number=5, intercept=True):
 
     # Regress y on the five most correlated columns of X, including an intercept
     # if desired
-    reg = lm(X, y, intercept=intercept)
+    reg = lm(X[:, index], y, intercept=intercept)
 
     # Replace the guesses for the estimated coefficients (note that .coef_ does
     # not return the estimated intercept, if one was included in the model)
