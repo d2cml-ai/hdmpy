@@ -3,10 +3,14 @@ import multiprocess as mp
 import numpy as np
 from scipy.stats import norm
 import pandas as pd
+import numbers
 
 
 def cvec(x):
-    if len(x.shape) == 1:
+
+    if isinstance(x, numbers.Number):
+        x = np.array([[x]])
+    elif len(x.shape) < 2:
         x.reshape((x.shape[0], 1))
     
     return x
@@ -26,7 +30,7 @@ def lm(X, y, intercept = True):
     assert (len(X.shape), len(y.shape)) == (2, 2), "X and y must be 2d arrays"
 
     if intercept:
-        X = np.concatenate([np.ones(X.shape[0], 1), X], axis = 1)
+        X = np.concatenate([np.ones((X.shape[0], 1)), X], axis = 1)
 
     XX = X.T @ X
     XX_inv = np.linalg.inv(XX)
@@ -88,7 +92,7 @@ def init_values(X, y, number=5, intercept=True):
     index = corr.argsort()[-np.amin([number, kx]):]
 
     # Set up an array of coefficient guesses
-    coefficients = np.zeros(shape=(kx, 1))
+    coefficients = np.zeros((kx, 1))
 
     # Regress y on the five most correlated columns of X, including an intercept
     # if desired
