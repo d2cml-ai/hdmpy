@@ -59,13 +59,10 @@ def cor(y, X):
     yX = np.concatenate([y, X[:, rand_vars]], axis=1)
 
     # Get the correlation coefficients between all columns of that array
-    corr = np.zeros(X.shape[1])
-    corr[rand_vars] = np.corrcoef(yX, rowvar=False)[0, 1:]
-
     # Get the first row, starting at the first off-diagonal element (these are
     # the correlation coefficients between y and each column of X
-    corr
-    corr[np.isnan(corr)] = 0
+    corr = np.zeros(X.shape[1])
+    corr[rand_vars] = np.corrcoef(yX, rowvar=False)[0, 1:]
 
     # Return the result
     return corr
