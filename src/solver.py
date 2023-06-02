@@ -53,15 +53,19 @@ def cor(y, X):
     corr: list of length k, where the k-th element is the correlation
           coefficient between y and the k-th column of X
     """
+    rand_vars = np.where(np.var(X, axis = 0) != 0)[0]
+    
     # Concatenate y and X into a single NumPy array
-    yX = np.concatenate([y, X], axis=1)
+    yX = np.concatenate([y, X[:, rand_vars]], axis=1)
 
     # Get the correlation coefficients between all columns of that array
-    corr = np.corrcoef(yX, rowvar=False)
+    corr = np.zeros(X.shape[1])
+    corr[rand_vars] = np.corrcoef(yX, rowvar=False)[0, 1:]
 
     # Get the first row, starting at the first off-diagonal element (these are
     # the correlation coefficients between y and each column of X
-    corr = corr[0, 1:]
+    corr
+    corr[np.isnan(corr)] = 0
 
     # Return the result
     return corr
