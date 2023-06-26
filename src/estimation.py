@@ -86,8 +86,7 @@ def rlasso(x, y, colnames=None, post=True, intercept=True,
                 intercept_value = np.mean(y + mu)
                 coef = np.zeros((p + 1, 1))
                 coef = pd.DataFrame(coef, 
-                                    index = ["(Intercept)"] + list(colnames))
-                
+                                    index = ["(Intercept)"] + list(colnames))                
             else:
                 intercept_value = np.mean(y)
                 coef = np.zeros((p, 1))
@@ -225,4 +224,63 @@ def rlasso(x, y, colnames=None, post=True, intercept=True,
 
     return est
 
+def rlassoIVselectX():
+    return
+
+def rlassoIVselectZ(x, d, y, z, post = True, intercept = True, **kwargs):
+
+    d = cvec(d)
+    z = cvec(z)
+    x = cvec(x)
+    y = cvec(y)
+
+    n = y.shape[0]
+    kex = x.shape[1]
+    ke = d.shape[1]
+
+    if isinstance(d, pd.DataFrame):
+        colnames_d = d.columns
+    else:
+        colnames_d = ["d" + str(i + 1) for i in np.arange(ke)]
+    
+    if isinstance(x, pd.DataFrame):
+        colnames_x = x.columns
+    else:
+        colnames_x = ["x" + str(i + 1) for i in np.arange(kex)]
+    
+    Z = np.concatenate([x, z], axis = 1)
+    kiv = Z.shape[1]
+    select_mat = np.array([[] for i in np.arange(kiv)], dtype = bool)
+    Dhat = np.array([[] for i in np.arange(n)])
+    flag_const = 0
+    
+    for i in np.arange(ke):
+        di = d[:, [i]]
+        lasso_fit = rlasso(y = di, x = Z, post = post, intercept = intercept, **kwargs)
+        if not np.any(lasso_fit["index"]):
+            dihat = np.repeat((n, 1), np.mean(di))
+            flag_const += 1
+            if flag_const > 1:
+                warnings.warn("No variables selected for two or more instruments, leading to multicollinearity problems")
+            select_mat = np.concatenate([select_mat, np.full((kiv, 1), False)], 
+                                        axis = 1)
+        else:
+            dihat = di - lasso_fit["residuals"].to_numpy().reshape((n, 1))
+            select_mat = np.concatenate([select_mat, lasso_fit["index"]], axis = 1)
         
+        Dhat = np.concatenate([Dhat, dihat], axis = 1)
+    
+    Dhat = np.concatenate([Dhat, x], axis = 1)
+    d = np.concatenate([d, x], axis = 1)
+    alpha_hat = np.linalg.pinv(Dhat.T @ d) @ (Dhat.T @ y)
+    residuals = y - d @ alpha_hat
+    Omega_hat = Dhat.T @ np.diag((residuals ** 2).reshape(n)) @ Dhat
+    Q_hat_inv = np.linalg.ping(d.T @ Dhat)
+    vcov = Q_hat_inv @ Omega_hat @ Q_hat_inv.T
+    
+
+        
+        
+
+
+
